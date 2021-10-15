@@ -6,7 +6,34 @@
 
     <groupId>cn.linjpxc</groupId>
     <artifactId>enumex</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:https://gitee.com/open_linjipxc/enumex.git</connection>
+        <developerConnection>scm:git:https://gitee.com/open_linjipxc/enumex.git</developerConnection>
+        <url>https://gitee.com/open_linjipxc/enumex</url>
+    </scm>
+
+    <developers>
+        <developer>
+            <name>linjpxc</name>
+            <email>815488987@qq.com</email>
+        </developer>
+    </developers>
+
+    <name>enumex</name>
+    <description>
+        enumex 是对 java 枚举类型的简单扩展，通过实现 EnumValue 接口，不再局限于字符串类型
+    </description>
+
+    <url>https://gitee.com/open_linjipxc/enumex</url>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -60,6 +87,77 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>jar</goal>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <additionalOption>
+                                <additionalOption>-Xdoclint:none</additionalOption>
+                            </additionalOption>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>sonatype-nexus-snapshots</id>
+            <name>Sonatype Nexus Snapshots</name>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
+        </snapshotRepository>
+        <repository>
+            <id>sonatype-nexus-staging</id>
+            <name>Nexus Release Repository</name>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
 </project>
