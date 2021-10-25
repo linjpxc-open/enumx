@@ -1,6 +1,5 @@
 package cn.linjpxc.enumex;
 
-import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -11,10 +10,10 @@ import java.util.Objects;
  * @author linjpxc
  * @since 1.8
  */
-public interface EnumValue<E extends java.lang.Enum<E>, V> extends Serializable {
+public interface EnumValue<E extends java.lang.Enum<E>, V> extends Valuable<V> {
 
     /**
-     * 枚举值
+     * 表示枚举值。
      */
     V value();
 

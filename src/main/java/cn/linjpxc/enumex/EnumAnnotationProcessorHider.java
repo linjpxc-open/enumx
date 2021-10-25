@@ -25,6 +25,7 @@ import javax.lang.model.element.*;
 import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 class EnumAnnotationProcessorHider {
@@ -33,10 +34,16 @@ class EnumAnnotationProcessorHider {
     @SupportedAnnotationTypes(value = {"cn.linjpxc.enumex.Enum"})
     public static class EnumProcessor extends AbstractProcessor {
 
+        private static final String ENUM_ANNOTATE_CLASS_NAME = Enum.class.getName();
+        private static final String ENUM_VALUE_DEFAULT_CLASS_NAME = Integer.class.getName();
+        private static final String ENUM_VALUE_FIELD_DEFAULT_NAME = "value";
+        private static final String ENUM_VALUE_TYPE_FIELD_NAME = "valueType";
+        private static final String ENUM_VALUE_FIELD_NAME_FIELD_NAME = "valueFieldName";
+
         private static final String ENUM_VALUE_CLASS_NAME = EnumValue.class.getName();
         private static final String ENUM_VALUE_METHOD_NAME = "value";
         private static final String VALUE_OF_METHOD_NAME = "valueOf";
-        private static final String VALUE_TYPE_CLASS_NAME = "valueType";
+
         private static final String JAVA_STRING_CLASS_NAME = "java.lang.String";
 
         @Override
@@ -57,11 +64,12 @@ class EnumAnnotationProcessorHider {
             roundEnv.getElementsAnnotatedWith(Enum.class).forEach(element -> {
                 final JCTree jcTree = javacTrees.getTree(element);
                 if (jcTree.getKind() == Tree.Kind.ENUM) {
-                    final TypeElement valueTypeElement = getEnumValueType(element, elementUtils, names);
-                    if (valueTypeElement == null) {
-                        this.processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Not found enum value type.");
+                    final EnumAnnotationInfo enumAnnotationInfo = getEnumAnnotationInfo(element, elementUtils, names);
+                    if (enumAnnotationInfo == null) {
+                        this.processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Not found Enum Annotation.");
                         return;
                     }
+
                     jcTree.accept(new TreeTranslator() {
                         @Override
                         public void visitClassDef(JCTree.JCClassDecl jcClassDecl) {
@@ -70,12 +78,12 @@ class EnumAnnotationProcessorHider {
                             if (isNonImplement(jcClassDecl.implementing, enumValueTypeElement)) {
                                 // 自动导入包
                                 autoImportPackage(javacTrees.getPath(element), treeMaker, elementUtils, enumValueTypeElement);
-                                autoImplementEnumValue(jcClassDecl, treeMaker, enumValueTypeElement, valueTypeElement);
+                                autoImplementEnumValue(jcClassDecl, treeMaker, enumValueTypeElement, enumAnnotationInfo);
 
-                                addValueFieldAndConstructor(jcClassDecl, element, valueTypeElement, treeMaker, names);
+                                addValueFieldAndConstructor(jcClassDecl, enumAnnotationInfo, treeMaker, names);
                             }
-                            autoImportPackage(javacTrees.getPath(element), treeMaker, elementUtils, valueTypeElement);
-                            addValueOfMethod(jcClassDecl, enumValueTypeElement, valueTypeElement, treeMaker, names);
+                            autoImportPackage(javacTrees.getPath(element), treeMaker, elementUtils, enumAnnotationInfo.valueType);
+                            addValueOfMethod(jcClassDecl, enumValueTypeElement, enumAnnotationInfo.valueType, treeMaker, names);
                             super.visitClassDef(jcClassDecl);
                         }
 
@@ -213,14 +221,14 @@ class EnumAnnotationProcessorHider {
             );
         }
 
-        private static void addValueFieldAndConstructor(JCTree.JCClassDecl jcClassDecl, Element element, Element valueTypeElement, TreeMaker treeMaker, Names names) {
+        private static void addValueFieldAndConstructor(JCTree.JCClassDecl jcClassDecl, EnumAnnotationInfo enumAnnotationInfo, TreeMaker treeMaker, Names names) {
             final ListBuffer<JCTree> listBuffer = new ListBuffer<>();
             listBuffer.appendList(removeConstructor(jcClassDecl.defs));
 
-            final String fieldName = (element.getSimpleName().toString() + "_value").toLowerCase();
+            final String fieldName = enumAnnotationInfo.valueFieldName;
 
             final JCTree.JCVariableDecl valueDecl = treeMaker.VarDef(
-                    new Symbol.VarSymbol(Flags.PRIVATE | Flags.FINAL, names.fromString(fieldName), ((Symbol) valueTypeElement).type, jcClassDecl.sym),
+                    new Symbol.VarSymbol(Flags.PRIVATE | Flags.FINAL, names.fromString(fieldName), ((Symbol) enumAnnotationInfo.valueType).type, jcClassDecl.sym),
                     null
             );
             listBuffer.append(valueDecl);
@@ -274,31 +282,66 @@ class EnumAnnotationProcessorHider {
             return list.toList();
         }
 
-        private static TypeElement getEnumValueType(Element element, Elements elementUtils, Names names) {
+//        private static TypeElement getEnumValueType(Element element, Elements elementUtils, Names names) {
+//            final java.util.List<? extends AnnotationMirror> annotationMirrors = element.getAnnotationMirrors();
+//            if (annotationMirrors == null || annotationMirrors.size() < 1) {
+//                return null;
+//            }
+//
+//            for (AnnotationMirror annotationMirror : annotationMirrors) {
+//                if (!annotationMirror.getAnnotationType().asElement().getSimpleName().equals(elementUtils.getTypeElement(Enum.class.getName()).getSimpleName())) {
+//                    continue;
+//                }
+//                final Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues = annotationMirror.getElementValues();
+//                if (elementValues == null) {
+//                    return null;
+//                }
+//                final ExecutableElement valueType = elementValues.keySet().stream().filter(key -> key.getSimpleName().equals(names.fromString(ENUM_VALUE_TYPE_FIELD_NAME))).findFirst().orElse(null);
+//                if (valueType == null) {
+//                    return elementUtils.getTypeElement(Integer.class.getName());
+//                }
+//                final AnnotationValue annotationValue = elementValues.get(valueType);
+//                return elementUtils.getTypeElement(annotationValue.getValue().toString());
+//            }
+//            return null;
+//        }
+
+        private static EnumAnnotationInfo getEnumAnnotationInfo(Element element, Elements elements, Names names) {
             final java.util.List<? extends AnnotationMirror> annotationMirrors = element.getAnnotationMirrors();
-            if (annotationMirrors == null || annotationMirrors.size() < 1) {
+            if (annotationMirrors == null) {
+                return null;
+            }
+            final AnnotationMirror annotationMirror = annotationMirrors
+                    .stream()
+                    .filter(item -> item.getAnnotationType().asElement().getSimpleName().equals(elements.getTypeElement(ENUM_ANNOTATE_CLASS_NAME).getSimpleName()))
+                    .findFirst()
+                    .orElse(null);
+            if (annotationMirror == null) {
                 return null;
             }
 
-            for (AnnotationMirror annotationMirror : annotationMirrors) {
-                if (!annotationMirror.getAnnotationType().asElement().getSimpleName().equals(elementUtils.getTypeElement(Enum.class.getName()).getSimpleName())) {
-                    continue;
-                }
-                final Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues = annotationMirror.getElementValues();
-                if (elementValues == null) {
-                    return null;
-                }
-                final ExecutableElement valueType = elementValues.keySet().stream().filter(key -> key.getSimpleName().equals(names.fromString(VALUE_TYPE_CLASS_NAME))).findFirst().orElse(null);
-                if (valueType == null) {
-                    return elementUtils.getTypeElement(Integer.class.getName());
-                }
-                final AnnotationValue annotationValue = elementValues.get(valueType);
-                return elementUtils.getTypeElement(annotationValue.getValue().toString());
+            final Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues = annotationMirror.getElementValues();
+            if (elementValues == null) {
+                return new EnumAnnotationInfo(elements.getTypeElement(ENUM_VALUE_DEFAULT_CLASS_NAME), ENUM_VALUE_FIELD_DEFAULT_NAME);
             }
-            return null;
+
+            final Set<? extends ExecutableElement> executableElements = elementValues.keySet();
+            TypeElement valueTypeElement = null;
+            String valueFieldName = ENUM_VALUE_FIELD_DEFAULT_NAME;
+            for (ExecutableElement item : executableElements) {
+                final Name simpleName = item.getSimpleName();
+                if (simpleName.equals(names.fromString(ENUM_VALUE_TYPE_FIELD_NAME))) {
+                    valueTypeElement = elements.getTypeElement(elementValues.get(item).getValue().toString());
+                }
+                if (simpleName.equals(names.fromString(ENUM_VALUE_FIELD_NAME_FIELD_NAME))) {
+                    valueFieldName = elementValues.get(item).getValue().toString();
+                }
+            }
+
+            return new EnumAnnotationInfo(valueTypeElement == null ? elements.getTypeElement(ENUM_VALUE_DEFAULT_CLASS_NAME) : valueTypeElement, valueFieldName);
         }
 
-        private static void autoImplementEnumValue(JCTree.JCClassDecl jcClassDecl, TreeMaker treeMaker, Element enumValueElement, Element valueTypeElement) {
+        private static void autoImplementEnumValue(JCTree.JCClassDecl jcClassDecl, TreeMaker treeMaker, Element enumValueElement, EnumAnnotationInfo enumAnnotationInfo) {
             final ListBuffer<JCTree.JCExpression> listBuffer = new ListBuffer<>();
             listBuffer.appendList(jcClassDecl.implementing);
 
@@ -308,7 +351,7 @@ class EnumAnnotationProcessorHider {
                                 (Symbol) enumValueElement
                         ), List.of(
                                 treeMaker.Ident(jcClassDecl.sym),
-                                treeMaker.Ident((Symbol) valueTypeElement)
+                                treeMaker.Ident((Symbol) enumAnnotationInfo.valueType)
                         ))
                 );
             }
@@ -361,6 +404,16 @@ class EnumAnnotationProcessorHider {
                 }
             }
             return false;
+        }
+
+        private static final class EnumAnnotationInfo {
+            final TypeElement valueType;
+            final String valueFieldName;
+
+            private EnumAnnotationInfo(TypeElement valueType, String valueFieldName) {
+                this.valueType = Objects.requireNonNull(valueType);
+                this.valueFieldName = valueFieldName == null || valueFieldName.trim().length() < 1 ? ENUM_VALUE_FIELD_DEFAULT_NAME : valueFieldName;
+            }
         }
     }
 }

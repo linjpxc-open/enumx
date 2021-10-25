@@ -15,4 +15,6 @@ public @interface Enum {
      * 枚举值类型
      */
     Class<?> valueType() default Integer.class;
+
+    String valueFieldName() default "value";
 }
