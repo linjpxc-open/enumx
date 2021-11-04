@@ -16,5 +16,8 @@ public @interface Enumerable {
      */
     Class<?> valueType() default Integer.class;
 
+    /**
+     * 枚举值字段名
+     */
     String valueFieldName() default "value";
 }
