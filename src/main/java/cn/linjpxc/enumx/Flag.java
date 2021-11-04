@@ -1,4 +1,4 @@
-package cn.linjpxc.enumex;
+package cn.linjpxc.enumx;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;

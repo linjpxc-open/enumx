@@ -7,7 +7,7 @@
 <dependency>
     <groupId>cn.linjpxc</groupId>
     <artifactId>enumex</artifactId>
-    <version>0.2.1</version>
+    <version>0.2.2</version>
 </dependency>
 ```
 
@@ -17,9 +17,9 @@
 valueFieldName 设置，默认为 value.
 
 ```java
-import cn.linjpxc.enumex.Enum;
+import cn.linjpxc.enumx.Enumerable;
 
-@Enum
+@Enumerable
 public enum NumberEnum {
     ONE(1),
     TWO(2);
@@ -29,7 +29,7 @@ public enum NumberEnum {
 编译后的代码为
 
 ```java
-import cn.linjpxc.enumex.EnumValue;
+import cn.linjpxc.enumx.EnumValue;
 
 public enum NumberEnum implements EnumValue<NumberEnum, Integer> {
     ONE(1),
@@ -55,9 +55,9 @@ public enum NumberEnum implements EnumValue<NumberEnum, Integer> {
 值为 String 类型时
 
 ```java
-import cn.linjpxc.enumex.Enum;
+import cn.linjpxc.enumx.Enumerable;
 
-@Enum(valueType = String.class)
+@Enumerable(valueType = String.class)
 public enum StringEnum {
 
     A("a"),
@@ -68,7 +68,7 @@ public enum StringEnum {
 编译后的代码为
 
 ```java
-import cn.linjpxc.enumex.EnumValue;
+import cn.linjpxc.enumx.EnumValue;
 
 public enum StringEnum implements EnumValue<StringEnum, String> {
     A("a"),
@@ -98,9 +98,9 @@ Flag 实现了动态 enum，做为 enum 功能的扩展。Flag 可以将 enum �
 用法
 
 ```java
-import cn.linjpxc.enumex.Flag;
-import cn.linjpxc.enumex.IntFlag;
-import cn.linjpxc.enumex.IntFlagValue;
+import cn.linjpxc.enumx.Flag;
+import cn.linjpxc.enumx.IntFlag;
+import cn.linjpxc.enumx.IntFlagValue;
 
 public enum Role implements IntFlag<Role> {
 

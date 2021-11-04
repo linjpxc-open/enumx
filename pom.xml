@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cn.linjpxc</groupId>
-    <artifactId>enumex</artifactId>
-    <version>0.2.1</version>
+    <artifactId>enumx</artifactId>
+    <version>0.2.2</version>
 
     <licenses>
         <license>

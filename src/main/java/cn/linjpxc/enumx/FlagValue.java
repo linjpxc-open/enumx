@@ -1,4 +1,4 @@
-package cn.linjpxc.enumex;
+package cn.linjpxc.enumx;
 
 public abstract class FlagValue<T extends FlagValue<T, V>, V extends Number> extends Number implements Comparable<T>, Valuable<V> {
 

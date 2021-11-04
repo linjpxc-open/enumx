@@ -1,5 +1,6 @@
-package cn.linjpxc.enumex;
+package cn.linjpxc.enumx;
 
+import java.lang.reflect.Type;
 import java.util.Objects;
 
 /**
@@ -38,7 +39,7 @@ public interface EnumValue<E extends java.lang.Enum<E>, V> extends Valuable<V> {
      * @throws NullPointerException     if {@code enumType} or {@code name}
      *                                  is null
      */
-    static <E extends java.lang.Enum<E> & EnumValue<E, V>, V> E valueOf(Class<E> enumType, V value) {
+    static <E extends Enum<E> & EnumValue<E, V>, V> E valueOf(Class<E> enumType, V value) {
         Objects.requireNonNull(value, "Value is null");
         final E[] values = enumType.getEnumConstants();
         for (E item : values) {

@@ -1,4 +1,4 @@
-package cn.linjpxc.enumex;
+package cn.linjpxc.enumx;
 
 import java.math.BigInteger;
 import java.util.Objects;

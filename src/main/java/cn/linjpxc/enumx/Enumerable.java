@@ -1,4 +1,4 @@
-package cn.linjpxc.enumex;
+package cn.linjpxc.enumx;
 
 import java.lang.annotation.*;
 
@@ -9,7 +9,7 @@ import java.lang.annotation.*;
 @Documented
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.SOURCE)
-public @interface Enum {
+public @interface Enumerable {
 
     /**
      * 枚举值类型

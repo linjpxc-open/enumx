@@ -1,4 +1,4 @@
-package cn.linjpxc.enumex;
+package cn.linjpxc.enumx;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
@@ -28,13 +28,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-class EnumAnnotationProcessorHider {
+class EnumerableAnnotationProcessorHider {
 
     @SupportedSourceVersion(SourceVersion.RELEASE_8)
-    @SupportedAnnotationTypes(value = {"cn.linjpxc.enumex.Enum"})
-    public static class EnumProcessor extends AbstractProcessor {
+    @SupportedAnnotationTypes(value = {"cn.linjpxc.enumx.Enumerable"})
+    public static class EnumerableProcessor extends AbstractProcessor {
 
-        private static final String ENUM_ANNOTATE_CLASS_NAME = Enum.class.getName();
+        private static final String ENUM_ANNOTATE_CLASS_NAME = Enumerable.class.getName();
         private static final String ENUM_VALUE_DEFAULT_CLASS_NAME = Integer.class.getName();
         private static final String ENUM_VALUE_FIELD_DEFAULT_NAME = "value";
         private static final String ENUM_VALUE_TYPE_FIELD_NAME = "valueType";
@@ -61,7 +61,7 @@ class EnumAnnotationProcessorHider {
 
             final TypeElement enumValueTypeElement = elementUtils.getTypeElement(ENUM_VALUE_CLASS_NAME);
 
-            roundEnv.getElementsAnnotatedWith(Enum.class).forEach(element -> {
+            roundEnv.getElementsAnnotatedWith(Enumerable.class).forEach(element -> {
                 final JCTree jcTree = javacTrees.getTree(element);
                 if (jcTree.getKind() == Tree.Kind.ENUM) {
                     final EnumAnnotationInfo enumAnnotationInfo = getEnumAnnotationInfo(element, elementUtils, names);

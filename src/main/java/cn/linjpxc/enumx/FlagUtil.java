@@ -1,4 +1,4 @@
-package cn.linjpxc.enumex;
+package cn.linjpxc.enumx;
 
 import sun.reflect.ConstructorAccessor;
 import sun.reflect.FieldAccessor;
