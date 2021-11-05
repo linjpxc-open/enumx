@@ -150,8 +150,8 @@ public final class Enums {
     public static <E extends Enum<E> & EnumValue<E, V>, V> Map<V, E> valueMap(Class<E> enumType) {
         final E[] enumConstants = enumType.getEnumConstants();
         final Map<V, E> map = new HashMap<>();
-        for (E item : enumConstants) {
-            map.put(item.value(), item);
+        for (final E enumConstant : enumConstants) {
+            map.put(enumConstant.value(), enumConstant);
         }
         return map;
     }

@@ -1,18 +1,10 @@
 package cn.linjpxc.enumx;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
-public interface Flag<F extends Enum<F> & Flag<F, FV, V>, FV extends FlagValue<FV, V>, V extends Number> extends EnumValue<F, V> {
-
-    FV flagValue();
-
-    @Override
-    default V value() {
-        return this.flagValue().value();
-    }
+public interface Flag<F extends Enum<F> & Flag<F, V>, V> extends EnumValue<F, V> {
 
     default boolean isDefined() {
         if (this instanceof Enum) {
@@ -22,50 +14,35 @@ public interface Flag<F extends Enum<F> & Flag<F, FV, V>, FV extends FlagValue<F
         return false;
     }
 
-    default boolean hasFlag(F flag) {
-        return this.flagValue().and(flag.flagValue()).equals(flag.flagValue());
+    boolean hasFlag(F flag);
+
+    F addFlag(F flag);
+
+    F removeFlag(F flag);
+
+    static <F extends Enum<F> & Flag<F, V>, V> F valueOf(Class<F> flagType, V value) {
+        return Flags.valueOf(flagType, value);
+//        final F[] values = flagType.getEnumConstants();
+//        for (F f : values) {
+//            if (f.value().equals(value)) {
+//                return f;
+//            }
+//        }
+//
+//        try {
+//            final Constructor<?>[] constructors = flagType.getDeclaredConstructors();
+//            if (constructors.length != 1) {
+//                throw new RuntimeException("Too many constructors.");
+//            }
+//
+//            return Flags.addFlag(flagType, value.toString(), new Class[]{constructors[0].getParameterTypes()[2]}, new Object[]{value});
+//        } catch (Exception e) {
+//            throw new IllegalArgumentException("No flag constant " + flagType.getCanonicalName() + " value: " + value, e);
+//        }
     }
 
     @SuppressWarnings({"unchecked"})
-    default F addFlag(F flag) {
-        return valueOf((Class<F>) this.getClass(), this.flagValue().or(flag.flagValue()));
-    }
-
-    @SuppressWarnings({"unchecked"})
-    default F removeFlag(F flag) {
-        return valueOf((Class<F>) this.getClass(), this.flagValue().andNot(flag.flagValue()));
-    }
-
-    static <F extends Enum<F> & Flag<F, FV, V>, FV extends FlagValue<FV, V>, V extends Number> F valueOf(Class<F> flagClass, V value) {
-        final F[] values = flagClass.getEnumConstants();
-        for (F f : values) {
-            if (f.value().equals(value)) {
-                return f;
-            }
-        }
-
-        try {
-            boolean isPrimitive = false;
-            final Constructor<?>[] constructors = flagClass.getDeclaredConstructors();
-            for (Constructor<?> constructor : constructors) {
-                if (constructor.getParameterTypes()[2].isPrimitive()) {
-                    isPrimitive = true;
-                    break;
-                }
-            }
-
-            return FlagUtil.addFlag(flagClass, value.toString(), new Class[]{FlagUtil.getFlagValueClass(flagClass, isPrimitive)}, new Object[]{value});
-        } catch (Exception e) {
-            throw new IllegalArgumentException("No flag constant " + flagClass.getCanonicalName() + " value: " + value, e);
-        }
-    }
-
-    static <F extends Enum<F> & Flag<F, FV, V>, FV extends FlagValue<FV, V>, V extends Number> F valueOf(Class<F> flagClass, FV value) {
-        return valueOf(flagClass, value.value());
-    }
-
-    @SuppressWarnings({"unchecked"})
-    static <F extends Enum<F> & Flag<F, FV, V>, FV extends FlagValue<FV, V>, V extends Number> F[] definedValues(Class<F> flagClass) {
+    static <F extends Enum<F> & Flag<F, V>, V> F[] definedValues(Class<F> flagClass) {
         List<F> list = new ArrayList<>();
         for (F item : flagClass.getEnumConstants()) {
             if (item.isDefined()) {
@@ -76,7 +53,7 @@ public interface Flag<F extends Enum<F> & Flag<F, FV, V>, FV extends FlagValue<F
     }
 
     @SuppressWarnings({"unchecked"})
-    static <F extends Enum<F> & Flag<F, FV, V>, FV extends FlagValue<FV, V>, V extends Number> String toString(F flag) {
+    static <F extends Enum<F> & Flag<F, V>, V> String toString(F flag) {
         if (flag.isDefined()) {
             return flag.name();
         }
