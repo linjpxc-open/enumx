@@ -11,7 +11,7 @@ public final class Enums {
     }
 
     public static <E extends Enum<E> & EnumValue<E, V>, V> E valueOf(Class<E> enumType, Object value) {
-        return valueOf(enumType, value, true);
+        return valueOf(enumType, value, false);
     }
 
     /**

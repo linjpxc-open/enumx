@@ -5,7 +5,7 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
-public interface Flag<F extends Enum<F> & Flag<F, FV, V>, FV extends FlagValue<FV, V>, V extends Number> extends Valuable<V> {
+public interface Flag<F extends Enum<F> & Flag<F, FV, V>, FV extends FlagValue<FV, V>, V extends Number> extends EnumValue<F, V> {
 
     FV flagValue();
 
