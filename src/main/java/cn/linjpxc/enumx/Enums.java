@@ -10,20 +10,27 @@ public final class Enums {
     private Enums() {
     }
 
+    public static <E extends Enum<E> & EnumValue<E, V>, V> E valueOf(Class<E> enumType, Object value) {
+        return valueOf(enumType, value, true);
+    }
+
     /**
      * 返回指定的枚举值，也可以是枚举名称(不区分大小写)的枚举常量。
      *
-     * @param enumType 枚举类型class
-     * @param value    自定的值
-     * @param <E>      枚举类型
-     * @param <V>      值类型
+     * @param enumType         枚举类型class
+     * @param value            自定的值
+     * @param <E>              枚举类型
+     * @param <V>              值类型
+     * @param primitiveConvert 基础类型是否自动转换
      * @return 返回枚举常量
      */
-    public static <E extends Enum<E> & EnumValue<E, V>, V> E valueOf(Class<E> enumType, Object value) {
+    public static <E extends Enum<E> & EnumValue<E, V>, V> E valueOf(Class<E> enumType, Object value, boolean primitiveConvert) {
         final Class<V> valueType = getValueType(enumType);
         final E[] enumConstants = enumType.getEnumConstants();
-        if (isPrimitiveWrapper(valueType) || valueType == value.getClass() || valueType.isAssignableFrom(value.getClass())) {
-            final Object primitiveValue = convertPrimitive(valueType, value);
+        if ((isPrimitiveWrapper(valueType) && primitiveConvert)
+                || valueType == value.getClass()
+                || valueType.isAssignableFrom(value.getClass())) {
+            final Object primitiveValue = convertPrimitive(valueType, value, primitiveConvert);
             for (E item : enumConstants) {
                 if (item.value().equals(value)) {
                     return item;
@@ -180,7 +187,10 @@ public final class Enums {
                 || clazz == Character.class;
     }
 
-    private static Object convertPrimitive(Class<?> clazz, Object value) {
+    private static Object convertPrimitive(Class<?> clazz, Object value, boolean primitiveConvert) {
+        if (!primitiveConvert) {
+            return null;
+        }
         if (clazz == value.getClass()) {
             return value;
         }

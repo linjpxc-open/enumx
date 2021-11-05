@@ -1,6 +1,5 @@
 package cn.linjpxc.enumx;
 
-import java.lang.reflect.Type;
 import java.util.Objects;
 
 /**
@@ -48,5 +47,27 @@ public interface EnumValue<E extends java.lang.Enum<E>, V> extends Valuable<V> {
             }
         }
         throw new IllegalArgumentException("No enum constant " + enumType.getCanonicalName() + " value: " + value);
+    }
+
+    @SuppressWarnings({"unchecked"})
+    static <E extends Enum<E> & EnumValue<E, V>, V> int compare(E left, E right) {
+        if (left == right) {
+            return 0;
+        }
+        if (left == null) {
+            return -1;
+        }
+        if (right == null) {
+            return 1;
+        }
+        try {
+            final Class<?> valueType = left.getClass().getDeclaredMethod("value").getReturnType();
+            if (Comparable.class.isAssignableFrom(valueType)) {
+                final Comparable<Object> comparable = (Comparable<Object>) left.value();
+                return comparable.compareTo(right.value());
+            }
+        } catch (Exception ignored) {
+        }
+        return left.compareTo(right);
     }
 }

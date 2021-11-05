@@ -5,7 +5,7 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
-public interface Flag<F extends java.lang.Enum<F> & Flag<F, FV, V>, FV extends FlagValue<FV, V>, V extends Number> extends Valuable<V> {
+public interface Flag<F extends Enum<F> & Flag<F, FV, V>, FV extends FlagValue<FV, V>, V extends Number> extends Valuable<V> {
 
     FV flagValue();
 
@@ -15,8 +15,8 @@ public interface Flag<F extends java.lang.Enum<F> & Flag<F, FV, V>, FV extends F
     }
 
     default boolean isDefined() {
-        if (this instanceof java.lang.Enum) {
-            final java.lang.Enum<?> e = (java.lang.Enum<?>) this;
+        if (this instanceof Enum) {
+            final Enum<?> e = (Enum<?>) this;
             return !this.value().toString().equals(e.name());
         }
         return false;
@@ -36,7 +36,7 @@ public interface Flag<F extends java.lang.Enum<F> & Flag<F, FV, V>, FV extends F
         return valueOf((Class<F>) this.getClass(), this.flagValue().andNot(flag.flagValue()));
     }
 
-    static <F extends java.lang.Enum<F> & Flag<F, FV, V>, FV extends FlagValue<FV, V>, V extends Number> F valueOf(Class<F> flagClass, V value) {
+    static <F extends Enum<F> & Flag<F, FV, V>, FV extends FlagValue<FV, V>, V extends Number> F valueOf(Class<F> flagClass, V value) {
         final F[] values = flagClass.getEnumConstants();
         for (F f : values) {
             if (f.value().equals(value)) {
@@ -60,12 +60,12 @@ public interface Flag<F extends java.lang.Enum<F> & Flag<F, FV, V>, FV extends F
         }
     }
 
-    static <F extends java.lang.Enum<F> & Flag<F, FV, V>, FV extends FlagValue<FV, V>, V extends Number> F valueOf(Class<F> flagClass, FV value) {
+    static <F extends Enum<F> & Flag<F, FV, V>, FV extends FlagValue<FV, V>, V extends Number> F valueOf(Class<F> flagClass, FV value) {
         return valueOf(flagClass, value.value());
     }
 
     @SuppressWarnings({"unchecked"})
-    static <F extends java.lang.Enum<F> & Flag<F, FV, V>, FV extends FlagValue<FV, V>, V extends Number> F[] definedValues(Class<F> flagClass) {
+    static <F extends Enum<F> & Flag<F, FV, V>, FV extends FlagValue<FV, V>, V extends Number> F[] definedValues(Class<F> flagClass) {
         List<F> list = new ArrayList<>();
         for (F item : flagClass.getEnumConstants()) {
             if (item.isDefined()) {
@@ -76,7 +76,7 @@ public interface Flag<F extends java.lang.Enum<F> & Flag<F, FV, V>, FV extends F
     }
 
     @SuppressWarnings({"unchecked"})
-    static <F extends java.lang.Enum<F> & Flag<F, FV, V>, FV extends FlagValue<FV, V>, V extends Number> String toString(F flag) {
+    static <F extends Enum<F> & Flag<F, FV, V>, FV extends FlagValue<FV, V>, V extends Number> String toString(F flag) {
         if (flag.isDefined()) {
             return flag.name();
         }
@@ -85,7 +85,7 @@ public interface Flag<F extends java.lang.Enum<F> & Flag<F, FV, V>, FV extends F
         final StringBuilder builder = new StringBuilder();
         F f = null;
         for (F value : values) {
-            if (value.isDefined()){
+            if (value.isDefined()) {
                 if (flag.hasFlag(value)) {
                     if (builder.length() > 0) {
                         builder.append(" | ");
