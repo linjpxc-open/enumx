@@ -4,9 +4,10 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 
 /**
- * 表示单个值的接口
+ * 表示实例的值。
  *
  * @param <V> 值类型
+ * @author linjpxc
  */
 public interface Valuable<V> extends Serializable {
 
@@ -17,6 +18,11 @@ public interface Valuable<V> extends Serializable {
      */
     V value();
 
+    /**
+     * 返回实例值的类型class。
+     *
+     * @return 实例值类型。
+     */
     @SuppressWarnings({"unchecked"})
     default Class<V> valueType() {
         try {

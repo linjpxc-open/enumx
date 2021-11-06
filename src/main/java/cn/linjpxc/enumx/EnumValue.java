@@ -3,22 +3,19 @@ package cn.linjpxc.enumx;
 import java.util.Objects;
 
 /**
- * 统一枚举值
+ * 统一枚举值接口。
  *
  * @param <E> 枚举类型
  * @param <V> 枚举值类型
  * @author linjpxc
- * @since 1.8
  */
+@SuppressWarnings({"AlibabaAbstractMethodOrInterfaceMethodMustUseJavadoc"})
 public interface EnumValue<E extends java.lang.Enum<E>, V> extends Valuable<V> {
 
     /**
-     * 表示枚举值。
-     */
-    V value();
-
-    /**
-     * {@link java.lang.Enum#getDeclaringClass()}
+     * {@inheritDoc}
+     *
+     * @see Enum#getDeclaringClass()
      */
     Class<E> getDeclaringClass();
 
@@ -49,6 +46,15 @@ public interface EnumValue<E extends java.lang.Enum<E>, V> extends Valuable<V> {
         throw new IllegalArgumentException("No enum constant " + enumType.getCanonicalName() + " value: " + value);
     }
 
+    /**
+     * 提供实例值比较。若实例的值实现 {@link Comparable} 接口，则比较使用实例值比较，否则使用枚举名称比较 {@link Enum#compareTo(Enum)}
+     *
+     * @param left  left
+     * @param right right
+     * @param <E>   枚举类型
+     * @param <V>   枚举值类型
+     * @return {@link Comparable#compareTo(Object)}
+     */
     @SuppressWarnings({"unchecked"})
     static <E extends Enum<E> & EnumValue<E, V>, V> int compare(E left, E right) {
         if (left == right) {

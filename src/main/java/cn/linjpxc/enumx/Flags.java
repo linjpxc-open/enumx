@@ -14,18 +14,23 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 
+/**
+ * 提供 {@link Flag} 的常用工具。
+ *
+ * @author linjpxc
+ */
 public final class Flags {
 
     private Flags() {
     }
 
-    private static final ReflectionFactory reflectionFactory = ReflectionFactory.getReflectionFactory();
+    private static final ReflectionFactory REFLECTION_FACTORY = ReflectionFactory.getReflectionFactory();
 
-    private static final ConcurrentMap<Class<?>, ConcurrentMap<Object, Flag<?, ?>>> flagMap = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class<?>, ConcurrentMap<Object, Flag<?, ?>>> FLAG_MAP = new ConcurrentHashMap<>();
 
     @SuppressWarnings({"unchecked"})
     static <F extends Enum<F> & Flag<F, V>, V> F valueOf(Class<F> flagType, V value) {
-        return (F) flagMap
+        return (F) FLAG_MAP
                 .computeIfAbsent(flagType, clazz -> {
                     if (!clazz.isEnum()) {
                         throw new IllegalArgumentException("not enum class.");
@@ -88,7 +93,7 @@ public final class Flags {
         setAccessible(modifiersField, true);
         modifiersField.setInt(field, modifiers);
 
-        final FieldAccessor fieldAccessor = reflectionFactory.newFieldAccessor(field, false);
+        final FieldAccessor fieldAccessor = REFLECTION_FACTORY.newFieldAccessor(field, false);
         fieldAccessor.set(target, value);
     }
 
@@ -115,7 +120,7 @@ public final class Flags {
 
         System.arraycopy(additionalParameterTypes, 0, parameterTypes, 2, additionalParameterTypes.length);
 
-        return reflectionFactory.newConstructorAccessor(enumClass.getDeclaredConstructor(parameterTypes));
+        return REFLECTION_FACTORY.newConstructorAccessor(enumClass.getDeclaredConstructor(parameterTypes));
     }
 
     private static Object makeEnum(Class<? extends java.lang.Enum<?>> enumClass, String value, int ordinal, Class<?>[] additionalTypes, Object[] additionalValues) throws NoSuchMethodException, InvocationTargetException, InstantiationException {

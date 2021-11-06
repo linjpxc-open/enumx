@@ -4,12 +4,26 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 /**
- * 提供枚举相关的工具方法
+ * 提供常用的枚举工具。
+ *
+ * @author linjpxc
  */
 public final class Enums {
     private Enums() {
     }
 
+    private static final String TRUE = "true";
+    private static final String FALSE = "false";
+
+    /**
+     * 返回指定的枚举常量。可以是枚举值，也可以是枚举名称(忽略大小写敏感)的枚举常量。不自动转换基础类型。
+     *
+     * @param enumType 枚举类型class
+     * @param value    自定的值
+     * @param <E>      枚举类型
+     * @param <V>      值类型
+     * @return 返回枚举常量
+     */
     public static <E extends Enum<E> & EnumValue<E, V>, V> E valueOf(Class<E> enumType, Object value) {
         return valueOf(enumType, value, false);
     }
@@ -27,9 +41,7 @@ public final class Enums {
     public static <E extends Enum<E> & EnumValue<E, V>, V> E valueOf(Class<E> enumType, Object value, boolean primitiveConvert) {
         final Class<V> valueType = getValueType(enumType);
         final E[] enumConstants = enumType.getEnumConstants();
-        if ((isPrimitiveWrapper(valueType) && primitiveConvert)
-                || valueType == value.getClass()
-                || valueType.isAssignableFrom(value.getClass())) {
+        if (isPrimitiveOrEnumValueType(valueType, primitiveConvert, value)) {
             final Object primitiveValue = convertPrimitive(valueType, value, primitiveConvert);
             for (E item : enumConstants) {
                 if (item.value().equals(value)) {
@@ -140,7 +152,7 @@ public final class Enums {
 
     public static <E extends Enum<E>> Map<String, E> map(Class<E> enumType) {
         final E[] enumConstants = enumType.getEnumConstants();
-        final Map<String, E> map = new HashMap<>();
+        final Map<String, E> map = new HashMap<>(enumConstants.length);
         for (E item : enumConstants) {
             map.put(item.name(), item);
         }
@@ -149,21 +161,17 @@ public final class Enums {
 
     public static <E extends Enum<E> & EnumValue<E, V>, V> Map<V, E> valueMap(Class<E> enumType) {
         final E[] enumConstants = enumType.getEnumConstants();
-        final Map<V, E> map = new HashMap<>();
+        final Map<V, E> map = new HashMap<>(enumConstants.length);
         for (final E enumConstant : enumConstants) {
             map.put(enumConstant.value(), enumConstant);
         }
         return map;
     }
 
-    private static <E extends Enum<E> & EnumValue<E, V>, V> boolean isValueType(Class<E> enumType, Class<?> type) {
-        try {
-            final Method method = enumType.getDeclaredMethod("value");
-            final Class<?> returnType = method.getReturnType();
-            return returnType == type && returnType.isAssignableFrom(type);
-        } catch (Exception ignored) {
-            return false;
-        }
+    private static boolean isPrimitiveOrEnumValueType(Class<?> valueType, boolean primitiveConvert, Object value) {
+        return (isPrimitiveWrapper(valueType) && primitiveConvert)
+                || valueType == value.getClass()
+                || valueType.isAssignableFrom(value.getClass());
     }
 
     @SuppressWarnings({"unchecked"})
@@ -278,10 +286,10 @@ public final class Enums {
     }
 
     private static Boolean toBoolean(String value) {
-        if ("true".equalsIgnoreCase(value)) {
+        if (TRUE.equalsIgnoreCase(value)) {
             return true;
         }
-        if ("false".equalsIgnoreCase(value)) {
+        if (FALSE.equalsIgnoreCase(value)) {
             return false;
         }
         return null;

@@ -6,7 +6,7 @@
 
     <groupId>cn.linjpxc</groupId>
     <artifactId>enumx</artifactId>
-    <version>0.2.3</version>
+    <version>0.2.4</version>
 
     <licenses>
         <license>
@@ -28,7 +28,7 @@
         </developer>
     </developers>
 
-    <name>enumex</name>
+    <name>enumx</name>
     <description>
         enumx 提供枚举值的统一接口，枚举值扩展接口，以及一些常见的枚举工具方法。
     </description>

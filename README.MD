@@ -7,7 +7,7 @@
 <dependency>
     <groupId>cn.linjpxc</groupId>
     <artifactId>enumx</artifactId>
-    <version>0.2.2</version>
+    <version>0.2.4</version>
 </dependency>
 ```
 
