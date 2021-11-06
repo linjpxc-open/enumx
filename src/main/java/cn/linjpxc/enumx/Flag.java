@@ -54,6 +54,8 @@ public interface Flag<F extends Enum<F> & Flag<F, V>, V> extends EnumValue<F, V>
      *
      * @param flagType 标识的类型class。
      * @param value    标识的值
+     * @param <F>      标识的类型
+     * @param <V>      标识值的类型
      * @return 返回指定值的标识
      */
     static <F extends Enum<F> & Flag<F, V>, V> F valueOf(Class<F> flagType, V value) {
@@ -64,6 +66,8 @@ public interface Flag<F extends Enum<F> & Flag<F, V>, V> extends EnumValue<F, V>
      * 返回所以静态定义的标识。
      *
      * @param flagClass 标识的类型 class。
+     * @param <F>       标识的类型
+     * @param <V>       标识的值类型
      * @return 返回所有的静态定义的标识。
      */
     @SuppressWarnings({"unchecked"})
@@ -79,7 +83,7 @@ public interface Flag<F extends Enum<F> & Flag<F, V>, V> extends EnumValue<F, V>
 
     /**
      * 提供统一的标识字符串形式的简单表示。<br>
-     * 建议重写 {@link Flag#toString()} ，用统一字符串表示。
+     * 建议重写 {@link Object#toString()} ，用统一字符串表示。
      *
      * @param flag 标识
      * @return 返回标识的字符串表示
