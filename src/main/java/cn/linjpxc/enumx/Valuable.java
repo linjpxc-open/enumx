@@ -1,7 +1,6 @@
 package cn.linjpxc.enumx;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
 
 /**
  * 表示实例的值。
@@ -25,11 +24,6 @@ public interface Valuable<V> extends Serializable {
      */
     @SuppressWarnings({"unchecked"})
     default Class<V> valueType() {
-        try {
-            final Method method = this.getClass().getDeclaredMethod("value");
-            return (Class<V>) method.getReturnType();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return (Class<V>) this.value().getClass();
     }
 }

@@ -18,8 +18,7 @@ public interface Flag<F extends Enum<F> & Flag<F, V>, V> extends EnumValue<F, V>
      */
     default boolean isDefined() {
         if (this instanceof Enum) {
-            final Enum<?> e = (Enum<?>) this;
-            return !this.value().toString().equals(e.name());
+            return !this.value().toString().equals(((Enum<?>) this).name());
         }
         return false;
     }

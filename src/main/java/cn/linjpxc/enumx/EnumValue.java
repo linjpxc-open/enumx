@@ -46,6 +46,15 @@ public interface EnumValue<E extends java.lang.Enum<E>, V> extends Valuable<V> {
         throw new IllegalArgumentException("No enum constant " + enumType.getCanonicalName() + " value: " + value);
     }
 
+    static <E extends Enum<E> & EnumValue<E, V>, V> String toString(E e) {
+        final V value = e.value();
+        if (value instanceof CharSequence) {
+            return value.toString();
+        }
+
+        return String.format("%s: %s", e.name(), value);
+    }
+
     /**
      * 提供实例值比较。若实例的值实现 {@link Comparable} 接口，则比较使用实例值比较，否则使用枚举名称比较 {@link Enum#compareTo(Enum)}
      *
