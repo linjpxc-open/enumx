@@ -1,21 +1,15 @@
 package cn.linjpxc.enumx;
 
-import sun.reflect.ConstructorAccessor;
-import sun.reflect.FieldAccessor;
-import sun.reflect.ReflectionFactory;
-
-import java.lang.reflect.*;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.function.Function;
 
 /**
- * 提供 {@link Flag} 的常用工具。
+ * 提供 {@link FlagValue} 的常用工具。
  *
  * @author linjpxc
  */
@@ -24,119 +18,113 @@ public final class Flags {
     private Flags() {
     }
 
-    private static final ReflectionFactory REFLECTION_FACTORY = ReflectionFactory.getReflectionFactory();
+    private static final ConcurrentHashMap<Class<?>, List<FlagWrapper<?, ?>>> FLAG_WRAPPERS = new ConcurrentHashMap<>();
 
-    private static final ConcurrentMap<Class<?>, ConcurrentMap<Object, Flag<?, ?>>> FLAG_MAP = new ConcurrentHashMap<>();
+    public static <F extends FlagValue<F, V>, V> Class<V> getValueType(Class<F> clazz) {
+        return Values.getValueType(clazz);
+    }
+
+    public static <F extends FlagValue<F, V>, V> String toString(F flag) {
+        return toString(flag, " | ");
+    }
+
+    static <F extends FlagValue<F, V>, V> String toString(F flag, String delimiter) {
+        final F[] values = getValues(flag.getDeclaringClass());
+        for (F value : values) {
+            if (value.equals(flag)) {
+                return flag.name();
+            }
+        }
+
+        final StringBuilder builder = new StringBuilder();
+        F f = null;
+        for (F value : values) {
+            if (flag.hasFlag(value)) {
+                if (builder.length() > 0) {
+                    builder.append(delimiter);
+                }
+                builder.append(value.name());
+
+                if (f == null) {
+                    f = value;
+                } else {
+                    f = f.addFlag(value);
+                }
+
+                if (f.compareTo(flag) >= 0) {
+                    break;
+                }
+            }
+        }
+
+        if (f != null && !f.equals(flag)) {
+            return flag.name();
+        }
+
+        if (builder.length() > 0) {
+            return builder.toString();
+        }
+        return flag.name();
+    }
 
     @SuppressWarnings({"unchecked"})
-    static <F extends Enum<F> & Flag<F, V>, V> F valueOf(Class<F> flagType, V value) {
-        return (F) FLAG_MAP
-                .computeIfAbsent(flagType, clazz -> {
-                    if (!clazz.isEnum()) {
-                        throw new IllegalArgumentException("not enum class.");
+    public static <F extends FlagValue<F, V>, V> F[] getValues(Class<F> clazz) {
+        return getFlagWrappers(clazz)
+                .stream()
+                .map(FlagWrapper::getValue)
+                .toArray(length -> (F[]) Array.newInstance(clazz, length));
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public static <F extends FlagValue<F, V>, V> F[] getDefineValues(Class<F> clazz) {
+        return getFlagWrappers(clazz)
+                .stream()
+                .filter(item -> item.getFlag().isDefined())
+                .map(FlagWrapper::getValue)
+                .toArray(length -> (F[]) Array.newInstance(clazz, length));
+    }
+
+    @SuppressWarnings({"unchecked"})
+    static <F extends FlagValue<F, V>, V> List<FlagWrapper<F, V>> getFlagWrappers(Class<F> clazz) {
+        if (!FlagValue.class.isAssignableFrom(clazz)) {
+            throw new RuntimeException("Not is FlagValue class.");
+        }
+        return (List<FlagWrapper<F, V>>) (Object) FLAG_WRAPPERS.computeIfAbsent(clazz, key -> {
+            try {
+                final Field[] fields = clazz.getDeclaredFields();
+                final List<FlagWrapper<?, ?>> list = new ArrayList<>();
+                for (Field field : fields) {
+                    final Flag flag = field.getDeclaredAnnotation(Flag.class);
+                    if (flag == null) {
+                        continue;
                     }
-                    if (!Flag.class.isAssignableFrom(clazz)) {
-                        throw new IllegalArgumentException("not flag class.");
+
+                    if (!Modifier.isStatic(field.getModifiers())) {
+                        System.err.printf("%s the field is not static: %s%n", clazz, field.getName());
+                        continue;
                     }
-                    return new ConcurrentHashMap<>(Enums.valueMap(flagType));
-                })
-                .computeIfAbsent(value, (Function<Object, F>) v -> {
-                    try {
-                        final Constructor<?>[] constructors = flagType.getDeclaredConstructors();
-                        if (constructors.length != 1) {
-                            throw new RuntimeException("Too many constructors.");
+
+                    field.setAccessible(true);
+
+                    final F value = (F) field.get(null);
+                    if (value instanceof TextFlag<?>) {
+                        final Field valueField = AbstractFlag.class.getDeclaredField("value");
+                        valueField.setAccessible(true);
+                        final String tmp = (String) valueField.get(value);
+                        if (tmp.length() < 1) {
+                            final Field modifiersField = Field.class.getDeclaredField("modifiers");
+                            modifiersField.setAccessible(true);
+                            modifiersField.setInt(valueField, valueField.getModifiers() & ~Modifier.FINAL);
+
+                            valueField.set(value, field.getName().toUpperCase(Locale.ROOT));
                         }
-
-                        return addFlag(flagType, value.toString(), new Class[]{constructors[0].getParameterTypes()[2]}, new Object[]{value});
-                    } catch (Exception e) {
-                        throw new IllegalArgumentException("No flag constant " + flagType.getCanonicalName() + " value: " + value, e);
                     }
-                });
-    }
-
-    @SuppressWarnings({"unchecked"})
-    static <T extends java.lang.Enum<T>> T addFlag(Class<T> enumType, String enumName, Class<?>[] additionalTypes, Object[] additionalValues) throws Exception {
-        Field valuesField = null;
-        final Field[] fields = enumType.getDeclaredFields();
-        for (Field field : fields) {
-            if (field.getName().contains("$VALUES")) {
-                valuesField = field;
-                break;
+                    list.add(new FlagWrapper<>(flag, field.getName(), value));
+                }
+                return list;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-        }
-        if (valuesField == null) {
-            throw new IllegalArgumentException();
-        }
-
-        AccessibleObject.setAccessible(new Field[]{valuesField}, true);
-
-        T[] previousValues = (T[]) valuesField.get(enumType);
-        final List<T> values = new ArrayList<>(Arrays.asList(previousValues));
-
-        T newValue = (T) makeEnum(enumType, enumName, values.size(), additionalTypes, additionalValues);
-        values.add(newValue);
-
-        setFailsafeFieldValue(valuesField, null, values.toArray((T[]) Array.newInstance(enumType, 0)));
-
-        cleanEnumCache(enumType);
-
-        return newValue;
-    }
-
-    private static void setFailsafeFieldValue(Field field, Object target, Object value) throws NoSuchFieldException, IllegalAccessException {
-        setAccessible(field, true);
-
-        int modifiers = field.getModifiers();
-        modifiers &= ~Modifier.FINAL;
-
-        final Field modifiersField = Field.class.getDeclaredField("modifiers");
-        setAccessible(modifiersField, true);
-        modifiersField.setInt(field, modifiers);
-
-        final FieldAccessor fieldAccessor = REFLECTION_FACTORY.newFieldAccessor(field, false);
-        fieldAccessor.set(target, value);
-    }
-
-    private static void blankField(Class<? extends java.lang.Enum<?>> enumClass, String fieldName) throws NoSuchFieldException, IllegalAccessException {
-        final Field[] declaredFields = Class.class.getDeclaredFields();
-        for (Field field : declaredFields) {
-            if (field.getName().contains(fieldName)) {
-                AccessibleObject.setAccessible(new Field[]{field}, true);
-                setFailsafeFieldValue(field, enumClass, null);
-                break;
-            }
-        }
-    }
-
-    private static void cleanEnumCache(Class<? extends java.lang.Enum<?>> enumClass) throws NoSuchFieldException, IllegalAccessException {
-        blankField(enumClass, "enumConstantDirectory");
-        blankField(enumClass, "enumConstants");
-    }
-
-    private static ConstructorAccessor getConstructorAccessor(Class<? extends java.lang.Enum<?>> enumClass, Class<?>[] additionalParameterTypes) throws NoSuchMethodException {
-        final Class<?>[] parameterTypes = new Class[additionalParameterTypes.length + 2];
-        parameterTypes[0] = String.class;
-        parameterTypes[1] = int.class;
-
-        System.arraycopy(additionalParameterTypes, 0, parameterTypes, 2, additionalParameterTypes.length);
-
-        return REFLECTION_FACTORY.newConstructorAccessor(enumClass.getDeclaredConstructor(parameterTypes));
-    }
-
-    private static Object makeEnum(Class<? extends java.lang.Enum<?>> enumClass, String value, int ordinal, Class<?>[] additionalTypes, Object[] additionalValues) throws NoSuchMethodException, InvocationTargetException, InstantiationException {
-        final Object[] params = new Object[additionalValues.length + 2];
-        params[0] = value;
-        params[1] = ordinal;
-
-        System.arraycopy(additionalValues, 0, params, 2, additionalValues.length);
-
-        return enumClass.cast(getConstructorAccessor(enumClass, additionalTypes).newInstance(params));
-    }
-
-    private static void setAccessible(AccessibleObject accessible, boolean value) {
-        AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
-            accessible.setAccessible(value);
-            return null;
         });
     }
 }

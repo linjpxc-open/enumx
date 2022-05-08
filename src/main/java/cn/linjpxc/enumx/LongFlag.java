@@ -1,53 +1,42 @@
 package cn.linjpxc.enumx;
 
 /**
- * 使用 {@link Long} 表示 {@link Flag#value()}.
- *
  * @author linjpxc
  */
-@SuppressWarnings({"AlibabaAbstractMethodOrInterfaceMethodMustUseJavadoc"})
-public interface LongFlag<F extends Enum<F> & LongFlag<F>> extends Flag<F, Long> {
+@SuppressWarnings("AlibabaAbstractClassShouldStartWithAbstractNaming")
+public abstract class LongFlag<F extends LongFlag<F>> extends AbstractFlag<F, Long> {
+    protected LongFlag(Long value) {
+        super(value);
+    }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see Flag#addFlag(Enum)
-     */
     @Override
-    default boolean hasFlag(F flag) {
-        if (flag == null) {
+    public boolean hasValue(Long value) {
+        if (value == null) {
             return false;
         }
-        final Long flagValue = flag.value();
-        return (this.value() & flagValue) == flagValue;
+        return (this.value & value) == value;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see Flag#addFlag(Enum)
-     */
     @Override
-    @SuppressWarnings({"unchecked"})
-    default F addFlag(F flag) {
-        if (flag == null) {
-            return (F) this;
-        }
-
-        return Flag.valueOf(this.getDeclaringClass(), this.value() | flag.value());
+    public F addValue(Long value) {
+        return createFlag(this.value | value);
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see Flag#removeFlag(Enum)
-     */
     @Override
-    @SuppressWarnings({"unchecked"})
-    default F removeFlag(F flag) {
-        if (flag == null) {
-            return (F) this;
+    public F removeValue(Long value) {
+        return createFlag(this.value & (~value));
+    }
+
+    @Override
+    public int compareTo(F o) {
+        if (o == null) {
+            return 1;
         }
-        return Flag.valueOf(this.getDeclaringClass(), this.value() & (~flag.value()));
+        return this.value.compareTo(o.value);
+    }
+
+    @Override
+    protected final Class<?> superClass() {
+        return LongFlag.class;
     }
 }

@@ -1,60 +1,42 @@
 package cn.linjpxc.enumx;
 
 /**
- * 使用 {@link Integer} 表示 {@link Flag#value()}.
- *
  * @author linjpxc
  */
-@SuppressWarnings({"AlibabaAbstractMethodOrInterfaceMethodMustUseJavadoc"})
-public interface IntFlag<F extends Enum<F> & IntFlag<F>> extends Flag<F, Integer> {
+@SuppressWarnings("AlibabaAbstractClassShouldStartWithAbstractNaming")
+public abstract class IntFlag<F extends IntFlag<F>> extends AbstractFlag<F, Integer> {
+    protected IntFlag(Integer value) {
+        super(value);
+    }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see Flag#hasFlag(Enum)
-     */
     @Override
-    default boolean hasFlag(F flag) {
-        if (flag == null) {
+    public boolean hasValue(Integer value) {
+        if (value == null) {
             return false;
         }
-        final int thisValue = this.value();
-        final Integer flagValue = flag.value();
-
-        return (thisValue & flagValue) == flagValue;
+        return (this.value & value) == value;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see Flag#addFlag(Enum)
-     */
     @Override
-    @SuppressWarnings({"unchecked"})
-    default F addFlag(F flag) {
-        if (flag == null) {
-            return (F) this;
-        }
-        final int thisValue = this.value();
-        final int flagValue = flag.value();
-
-        return Flag.valueOf(this.getDeclaringClass(), thisValue | flagValue);
+    public F addValue(Integer value) {
+        return createFlag(this.value | value);
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see Flag#removeFlag(Enum)
-     */
     @Override
-    @SuppressWarnings({"unchecked"})
-    default F removeFlag(F flag) {
-        if (flag == null) {
-            return (F) this;
-        }
-        final int thisValue = this.value();
-        final int flagValue = flag.value();
+    public F removeValue(Integer value) {
+        return createFlag(this.value & (~value));
+    }
 
-        return Flag.valueOf(this.getDeclaringClass(), thisValue & (~flagValue));
+    @Override
+    public int compareTo(F o) {
+        if (o == null) {
+            return 1;
+        }
+        return this.value.compareTo(o.value);
+    }
+
+    @Override
+    protected final Class<?> superClass() {
+        return IntFlag.class;
     }
 }
