@@ -1,6 +1,9 @@
 package cn.linjpxc.enumx;
 
 import java.util.Locale;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * @author linjpxc
@@ -174,6 +177,28 @@ public abstract class TextFlag<F extends TextFlag<F>> extends AbstractFlag<F, St
         if (value.endsWith(delimiter)) {
             value = value.substring(0, value.length() - 1);
         }
-        return value.trim();
+        value = value.trim();
+
+        final String[] array = value.split("\\" + delimiter);
+        final Set<String> set = new TreeSet<>((o1, o2) -> {
+            if (Objects.equals(o1, o2)) {
+                return 0;
+            }
+            if (o1 == null) {
+                return -1;
+            }
+            return o1.compareToIgnoreCase(o2);
+        });
+        final StringBuilder builder = new StringBuilder();
+        for (String item : array) {
+            item = item.trim();
+            if (set.add(item)) {
+                if (builder.length() > 0) {
+                    builder.append(delimiter);
+                }
+                builder.append(item);
+            }
+        }
+        return builder.toString();
     }
 }
