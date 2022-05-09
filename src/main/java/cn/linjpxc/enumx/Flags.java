@@ -50,6 +50,20 @@ public final class Flags {
     }
 
     @SuppressWarnings({"unchecked"})
+    public static <F extends FlagValue<F, V>, V> F valueOf(Class<F> clazz, V value, boolean primitiveConvert) {
+        if (value == null) {
+            return null;
+        }
+        if (primitiveConvert) {
+            final Class<V> valueType = getValueType(clazz);
+            if (valueType != value) {
+                return valueOf(clazz, (V) Classes.convertPrimitive(valueType, value));
+            }
+        }
+        return valueOf(clazz, value);
+    }
+
+    @SuppressWarnings({"unchecked"})
     static <F extends FlagValue<F, V>, V> F valueOf(Class<F> clazz, V value) {
         final List<FlagWrapper<F, V>> list = getFlagWrappers(clazz);
         for (FlagWrapper<F, V> item : list) {
