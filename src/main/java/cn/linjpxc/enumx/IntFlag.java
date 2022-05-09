@@ -5,8 +5,12 @@ package cn.linjpxc.enumx;
  */
 @SuppressWarnings("AlibabaAbstractClassShouldStartWithAbstractNaming")
 public abstract class IntFlag<F extends IntFlag<F>> extends AbstractFlag<F, Integer> {
-    protected IntFlag(Integer value) {
+    protected IntFlag(int value) {
         super(value);
+    }
+
+    protected IntFlag(String name, int value) {
+        super(name, value);
     }
 
     @Override
@@ -14,17 +18,17 @@ public abstract class IntFlag<F extends IntFlag<F>> extends AbstractFlag<F, Inte
         if (value == null) {
             return false;
         }
-        return (this.value & value) == value;
+        return (this.value() & value) == value;
     }
 
     @Override
     public F addValue(Integer value) {
-        return createFlag(this.value | value);
+        return createFlag(this.value() | value);
     }
 
     @Override
     public F removeValue(Integer value) {
-        return createFlag(this.value & (~value));
+        return createFlag(this.value() & (~value));
     }
 
     @Override
@@ -32,7 +36,7 @@ public abstract class IntFlag<F extends IntFlag<F>> extends AbstractFlag<F, Inte
         if (o == null) {
             return 1;
         }
-        return this.value.compareTo(o.value);
+        return this.value().compareTo(o.value());
     }
 
     @Override

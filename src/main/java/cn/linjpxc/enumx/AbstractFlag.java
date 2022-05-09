@@ -8,10 +8,24 @@ import java.util.Objects;
 public abstract class AbstractFlag<F extends AbstractFlag<F, V>, V> implements FlagValue<F, V> {
     private static final long serialVersionUID = 8938203086618420260L;
 
+    private final String name;
     protected final V value;
 
     protected AbstractFlag(V value) {
+        this(null, value);
+    }
+
+    protected AbstractFlag(String name, V value) {
+        this.name = name;
         this.value = Objects.requireNonNull(value);
+    }
+
+    @Override
+    public String name() {
+        if (this.name != null && this.name.length() > 0) {
+            return this.name;
+        }
+        return FlagValue.super.name();
     }
 
     @Override
@@ -61,6 +75,7 @@ public abstract class AbstractFlag<F extends AbstractFlag<F, V>, V> implements F
 
     /**
      * super class
+     *
      * @return super class
      */
     protected abstract Class<?> superClass();

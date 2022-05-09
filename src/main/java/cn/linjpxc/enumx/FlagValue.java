@@ -1,8 +1,6 @@
 package cn.linjpxc.enumx;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -114,28 +112,9 @@ public interface FlagValue<F extends FlagValue<F, V>, V> extends Valuable<V>, Co
      * @param <V>   V
      * @return Flag
      */
-    @SuppressWarnings({"unchecked", "AliEqualsAvoidNull"})
+    @SuppressWarnings({"unchecked"})
     static <F extends FlagValue<F, V>, V> F valueOf(Class<F> clazz, V value) {
-        final List<FlagWrapper<F, V>> list = Flags.getFlagWrappers(clazz);
-        for (FlagWrapper<F, V> item : list) {
-            if (Objects.equals(item.getValue().value(), value)) {
-                return (F) item.getValue();
-            }
-        }
-
-        try {
-            final Method valueOfMethod = Arrays.stream(clazz.getDeclaredMethods())
-                    .filter(method -> Modifier.isStatic(method.getModifiers()) && method.getName().equals("valueOf"))
-                    .findFirst().orElse(null);
-            if (valueOfMethod == null) {
-                throw new RuntimeException();
-            }
-
-            valueOfMethod.setAccessible(true);
-            return (F) valueOfMethod.invoke(null, value);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return Flags.valueOf(clazz, value);
     }
 
     static <F extends FlagValue<F, V>, V> int compare(F left, F right) {

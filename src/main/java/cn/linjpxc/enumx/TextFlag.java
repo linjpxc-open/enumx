@@ -13,8 +13,8 @@ public abstract class TextFlag<F extends TextFlag<F>> extends AbstractFlag<F, St
 
     protected static final String DEFAULT_DELIMITER = "|";
 
-    private final String delimiter;
-    private final String splitDelimiter;
+    protected final String delimiter;
+    protected final String splitDelimiter;
 
     protected TextFlag(String delimiter) {
         super("");
@@ -26,7 +26,16 @@ public abstract class TextFlag<F extends TextFlag<F>> extends AbstractFlag<F, St
     }
 
     protected TextFlag(String delimiter, String value) {
-        super(handleValue(value, delimiter).toUpperCase(Locale.ROOT));
+        super(handleValue(value, delimiter));
+        if (delimiter.length() < 1) {
+            throw new IllegalArgumentException("Delimiter is empty.");
+        }
+        this.delimiter = delimiter;
+        this.splitDelimiter = "\\" + delimiter;
+    }
+
+    protected TextFlag(String delimiter, String name, String value) {
+        super(name, handleValue(value, delimiter));
         if (delimiter.length() < 1) {
             throw new IllegalArgumentException("Delimiter is empty.");
         }
@@ -169,7 +178,7 @@ public abstract class TextFlag<F extends TextFlag<F>> extends AbstractFlag<F, St
         return handleValue(value, this.delimiter);
     }
 
-    private static String handleValue(String value, String delimiter) {
+    protected static String handleValue(String value, String delimiter) {
         value = value.trim();
         if (value.startsWith(delimiter)) {
             value = value.substring(1);
@@ -199,6 +208,6 @@ public abstract class TextFlag<F extends TextFlag<F>> extends AbstractFlag<F, St
                 builder.append(item);
             }
         }
-        return builder.toString();
+        return builder.toString().toUpperCase(Locale.ROOT);
     }
 }

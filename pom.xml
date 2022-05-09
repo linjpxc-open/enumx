@@ -6,7 +6,7 @@
 
     <groupId>cn.linjpxc</groupId>
     <artifactId>enumx</artifactId>
-    <version>0.3.1</version>
+    <version>0.3.2</version>
 
     <licenses>
         <license>
@@ -33,7 +33,7 @@
         enumx 提供枚举值的统一接口，枚举值扩展接口，以及一些常见的枚举工具方法。
     </description>
 
-    <url>https://gitee.com/open_linjipxc/enumex</url>
+    <url>https://gitee.com/linjpxc-open/enumx</url>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>

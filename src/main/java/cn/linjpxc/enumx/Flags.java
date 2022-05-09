@@ -2,10 +2,12 @@ package cn.linjpxc.enumx;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -18,6 +20,8 @@ public final class Flags {
     private Flags() {
     }
 
+    private static final String VALUE_OF_METHOD_NAME = "valueOf";
+
     private static final ConcurrentHashMap<Class<?>, List<FlagWrapper<?, ?>>> FLAG_WRAPPERS = new ConcurrentHashMap<>();
 
     public static <F extends FlagValue<F, V>, V> Class<V> getValueType(Class<F> clazz) {
@@ -26,6 +30,42 @@ public final class Flags {
 
     public static <F extends FlagValue<F, V>, V> String toString(F flag) {
         return toString(flag, " | ");
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public static <F extends FlagValue<F, V>, V> F[] getValues(Class<F> clazz) {
+        return getFlagWrappers(clazz)
+                .stream()
+                .map(FlagWrapper::getValue)
+                .toArray(length -> (F[]) Array.newInstance(clazz, length));
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public static <F extends FlagValue<F, V>, V> F[] getDefineValues(Class<F> clazz) {
+        return getFlagWrappers(clazz)
+                .stream()
+                .filter(item -> item.getFlag().isDefined())
+                .map(FlagWrapper::getValue)
+                .toArray(length -> (F[]) Array.newInstance(clazz, length));
+    }
+
+    @SuppressWarnings({"unchecked"})
+    static <F extends FlagValue<F, V>, V> F valueOf(Class<F> clazz, V value) {
+        final List<FlagWrapper<F, V>> list = getFlagWrappers(clazz);
+        for (FlagWrapper<F, V> item : list) {
+            if (Objects.equals(item.getValue().value(), value)) {
+                return (F) item.getValue();
+            }
+        }
+
+        final Class<V> valueType = getValueType(clazz);
+        try {
+            final Method valueOfMethod = getValueOfMethod(clazz, valueType);
+            valueOfMethod.setAccessible(true);
+            return (F) valueOfMethod.invoke(null, value.toString(), value);
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     static <F extends FlagValue<F, V>, V> String toString(F flag, String delimiter) {
@@ -65,23 +105,6 @@ public final class Flags {
             return builder.toString();
         }
         return flag.name();
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public static <F extends FlagValue<F, V>, V> F[] getValues(Class<F> clazz) {
-        return getFlagWrappers(clazz)
-                .stream()
-                .map(FlagWrapper::getValue)
-                .toArray(length -> (F[]) Array.newInstance(clazz, length));
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public static <F extends FlagValue<F, V>, V> F[] getDefineValues(Class<F> clazz) {
-        return getFlagWrappers(clazz)
-                .stream()
-                .filter(item -> item.getFlag().isDefined())
-                .map(FlagWrapper::getValue)
-                .toArray(length -> (F[]) Array.newInstance(clazz, length));
     }
 
     @SuppressWarnings({"unchecked"})
@@ -126,5 +149,17 @@ public final class Flags {
                 throw new RuntimeException(e);
             }
         });
+    }
+
+    private static Method getValueOfMethod(Class<?> clazz, Class<?> valueType) throws NoSuchMethodException {
+        final Class<?> primitiveType = Classes.convertPrimitiveType(valueType);
+        if (primitiveType != valueType) {
+            try {
+                return clazz.getDeclaredMethod(VALUE_OF_METHOD_NAME, String.class, primitiveType);
+            } catch (Exception ignored) {
+            }
+        }
+
+        return clazz.getDeclaredMethod(VALUE_OF_METHOD_NAME, String.class, valueType);
     }
 }

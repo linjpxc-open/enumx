@@ -1,6 +1,5 @@
 package cn.linjpxc.enumx;
 
-import java.lang.reflect.Method;
 import java.util.*;
 
 /**
@@ -105,7 +104,7 @@ public final class Enums {
      * @return 若常量存在，则返回true，否则返回false。
      */
     public static <E extends Enum<E>> boolean exists(Class<E> enumType, String name) {
-        if (isEmpty(name)) {
+        if (Strings.isBlank(name)) {
             return false;
         }
         final E[] enumConstants = enumType.getEnumConstants();
@@ -126,7 +125,7 @@ public final class Enums {
      * @return 若常量存在，则返回true，否则返回false。
      */
     public static <E extends Enum<E>> boolean existsIgnoreCase(Class<E> enumType, String name) {
-        if (isEmpty(name)) {
+        if (Strings.isBlank(name)) {
             return false;
         }
         final E[] enumConstants = enumType.getEnumConstants();
@@ -180,133 +179,19 @@ public final class Enums {
     }
 
     private static boolean isPrimitiveOrEnumValueType(Class<?> valueType, boolean primitiveConvert, Object value) {
-        return (isPrimitiveWrapper(valueType) && primitiveConvert)
+        return (Classes.isPrimitiveWrapper(valueType) && primitiveConvert)
                 || valueType == value.getClass()
                 || valueType.isAssignableFrom(value.getClass());
-    }
-
-//    @SuppressWarnings({"unchecked"})
-//    private static <E extends Enum<E> & EnumValue<E, V>, V> Class<V> getValueType(Class<E> enumType) {
-//        try {
-//            final Method method = enumType.getDeclaredMethod("value");
-//            return (Class<V>) method.getReturnType();
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
-
-    private static boolean isPrimitiveWrapper(Class<?> clazz) {
-        return clazz == Boolean.class
-                || clazz == Short.class
-                || clazz == Integer.class
-                || clazz == Long.class
-                || clazz == Float.class
-                || clazz == Double.class
-                || clazz == Byte.class
-                || clazz == Character.class;
     }
 
     private static Object convertPrimitive(Class<?> clazz, Object value, boolean primitiveConvert) {
         if (!primitiveConvert) {
             return null;
         }
-        if (clazz == value.getClass()) {
-            return value;
-        }
-        if (clazz == Boolean.class) {
-            return toBoolean(value.toString());
-        }
-        if (clazz == Byte.class) {
-            return toByte(value.toString());
-        }
-        if (clazz == Short.class) {
-            return toShort(value.toString());
-        }
-        if (clazz == Integer.class) {
-            return toInteger(value.toString());
-        }
-        if (clazz == Long.class) {
-            return toLong(value.toString());
-        }
-        if (clazz == Float.class) {
-            return toFloat(value.toString());
-        }
-        if (clazz == Double.class) {
-            return toDouble(value.toString());
-        }
-        if (clazz == Character.class) {
-            return toCharacter(value.toString());
-        }
-
-        return null;
-    }
-
-    private static Character toCharacter(String value) {
-        if (value.length() == 1) {
-            return value.toCharArray()[0];
-        }
-        return null;
-    }
-
-    private static Double toDouble(String value) {
         try {
-            return Double.parseDouble(value);
+            return Classes.convertPrimitive(clazz, value);
         } catch (Exception ignored) {
             return null;
         }
-    }
-
-    private static Float toFloat(String value) {
-        try {
-            return Float.parseFloat(value);
-        } catch (Exception ignored) {
-            return null;
-        }
-    }
-
-    private static Long toLong(String value) {
-        try {
-            return Long.parseLong(value);
-        } catch (Exception ignored) {
-            return null;
-        }
-    }
-
-    private static Integer toInteger(String value) {
-        try {
-            return Integer.parseInt(value);
-        } catch (Exception ignored) {
-            return null;
-        }
-    }
-
-    private static Short toShort(String value) {
-        try {
-            return Short.parseShort(value);
-        } catch (Exception ignored) {
-            return null;
-        }
-    }
-
-    private static Byte toByte(String value) {
-        try {
-            return Byte.parseByte(value);
-        } catch (Exception ignored) {
-            return null;
-        }
-    }
-
-    private static Boolean toBoolean(String value) {
-        if (TRUE.equalsIgnoreCase(value)) {
-            return true;
-        }
-        if (FALSE.equalsIgnoreCase(value)) {
-            return false;
-        }
-        return null;
-    }
-
-    private static boolean isEmpty(String value) {
-        return value == null || value.trim().length() < 1;
     }
 }

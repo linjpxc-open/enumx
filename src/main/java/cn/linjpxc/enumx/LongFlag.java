@@ -5,8 +5,12 @@ package cn.linjpxc.enumx;
  */
 @SuppressWarnings("AlibabaAbstractClassShouldStartWithAbstractNaming")
 public abstract class LongFlag<F extends LongFlag<F>> extends AbstractFlag<F, Long> {
-    protected LongFlag(Long value) {
+    protected LongFlag(long value) {
         super(value);
+    }
+
+    protected LongFlag(String name, long value) {
+        super(name, value);
     }
 
     @Override
