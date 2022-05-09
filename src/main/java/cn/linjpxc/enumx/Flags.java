@@ -50,7 +50,7 @@ public final class Flags {
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <F extends FlagValue<F, V>, V> F valueOf(Class<F> clazz, V value, boolean primitiveConvert) {
+    public static <F extends FlagValue<F, V>, V> F valueOf(Class<F> clazz, Object value, boolean primitiveConvert) {
         if (value == null) {
             return null;
         }
@@ -60,7 +60,7 @@ public final class Flags {
                 return valueOf(clazz, (V) Classes.convertPrimitive(valueType, value));
             }
         }
-        return valueOf(clazz, value);
+        return valueOf(clazz, (V) value);
     }
 
     @SuppressWarnings({"unchecked"})
