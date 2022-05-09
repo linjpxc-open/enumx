@@ -1,8 +1,9 @@
 package cn.linjpxc.enumx;
 
-import java.lang.reflect.Method;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @author linjpxc
@@ -103,6 +104,63 @@ public interface FlagValue<F extends FlagValue<F, V>, V> extends Valuable<V>, Co
      */
     Class<F> getDeclaringClass();
 
+    default F[] toDefineArray() {
+        return toDefineArray(false);
+    }
+
+    /**
+     * toDefineArray
+     *
+     * @return toDefineArray
+     */
+    @SuppressWarnings({"unchecked"})
+    default F[] toDefineArray(boolean withOther) {
+        final List<F> list = toDefineFlags(withOther);
+        final F[] arr = (F[]) Array.newInstance(this.getDeclaringClass(), 0);
+        if (list.isEmpty()) {
+            return arr;
+        }
+        return list.toArray(arr);
+    }
+
+    default List<F> toDefineFlags() {
+        return this.toDefineFlags(false);
+    }
+
+    /**
+     * toDefineFlags
+     *
+     * @return toDefineFlags
+     */
+    @SuppressWarnings({"unchecked"})
+    default List<F> toDefineFlags(boolean withOther) {
+        final Class<F> declaringClass = this.getDeclaringClass();
+        final F[] defineValues = Flags.getDefineValues(declaringClass);
+        final List<F> list = new ArrayList<>();
+        F f = null;
+        for (F item : defineValues) {
+            if (this.hasFlag(item)) {
+                list.add(item);
+                if (f == null) {
+                    f = item;
+                } else {
+                    f = f.addFlag(item);
+                }
+            }
+        }
+        if (withOther) {
+            if (!this.equals(f)) {
+                if (f == null) {
+                    list.add((F) this);
+                } else {
+                    list.add(this.removeFlag(f));
+                }
+            }
+        }
+
+        return Collections.unmodifiableList(list);
+    }
+
     /**
      * valueOf
      *
@@ -112,7 +170,6 @@ public interface FlagValue<F extends FlagValue<F, V>, V> extends Valuable<V>, Co
      * @param <V>   V
      * @return Flag
      */
-    @SuppressWarnings({"unchecked"})
     static <F extends FlagValue<F, V>, V> F valueOf(Class<F> clazz, V value) {
         return Flags.valueOf(clazz, value);
     }
