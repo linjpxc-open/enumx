@@ -149,9 +149,7 @@ public final class Flags {
                         valueField.setAccessible(true);
                         final String tmp = (String) valueField.get(value);
                         if (tmp.length() < 1) {
-                            final Field modifiersField = Field.class.getDeclaredField("modifiers");
-                            modifiersField.setAccessible(true);
-                            modifiersField.setInt(valueField, valueField.getModifiers() & ~Modifier.FINAL);
+                            removeFinal(valueField);
 
                             valueField.set(value, field.getName().toUpperCase(Locale.ROOT));
                         }
@@ -163,6 +161,15 @@ public final class Flags {
                 throw new RuntimeException(e);
             }
         });
+    }
+
+    private static void removeFinal(Field field) {
+        try {
+            final Field modifiersField = Field.class.getDeclaredField("modifiers");
+            modifiersField.setAccessible(true);
+            modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+        } catch (Throwable ignored) {
+        }
     }
 
     private static Method getValueOfMethod(Class<?> clazz, Class<?> valueType) throws NoSuchMethodException {
