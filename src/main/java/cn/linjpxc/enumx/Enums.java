@@ -104,7 +104,7 @@ public final class Enums {
      * @return 若常量存在，则返回true，否则返回false。
      */
     public static <E extends Enum<E>> boolean exists(Class<E> enumType, String name) {
-        if (Strings.isBlank(name)) {
+        if (StringUtils.isBlank(name)) {
             return false;
         }
         final E[] enumConstants = enumType.getEnumConstants();
@@ -125,7 +125,7 @@ public final class Enums {
      * @return 若常量存在，则返回true，否则返回false。
      */
     public static <E extends Enum<E>> boolean existsIgnoreCase(Class<E> enumType, String name) {
-        if (Strings.isBlank(name)) {
+        if (StringUtils.isBlank(name)) {
             return false;
         }
         final E[] enumConstants = enumType.getEnumConstants();
@@ -179,7 +179,7 @@ public final class Enums {
     }
 
     private static boolean isPrimitiveOrEnumValueType(Class<?> valueType, boolean primitiveConvert, Object value) {
-        return (Classes.isPrimitiveWrapper(valueType) && primitiveConvert)
+        return (ClassUtils.isPrimitiveWrapper(valueType) && primitiveConvert)
                 || valueType == value.getClass()
                 || valueType.isAssignableFrom(value.getClass());
     }
@@ -189,7 +189,7 @@ public final class Enums {
             return null;
         }
         try {
-            return Classes.convertPrimitive(clazz, value);
+            return ClassUtils.convertPrimitive(clazz, value);
         } catch (Exception ignored) {
             return null;
         }

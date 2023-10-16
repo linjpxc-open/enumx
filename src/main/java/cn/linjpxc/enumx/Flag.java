@@ -2,10 +2,10 @@ package cn.linjpxc.enumx;
 
 import java.lang.annotation.*;
 
-
 /**
  * @author linjpxc
  */
+@Inherited
 @Documented
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)

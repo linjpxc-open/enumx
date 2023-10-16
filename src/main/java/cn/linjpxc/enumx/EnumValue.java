@@ -13,8 +13,6 @@ import java.util.Objects;
 public interface EnumValue<E extends java.lang.Enum<E>, V> extends Valuable<V> {
 
     /**
-     * {@inheritDoc}
-     *
      * @see Enum#getDeclaringClass()
      */
     Class<E> getDeclaringClass();

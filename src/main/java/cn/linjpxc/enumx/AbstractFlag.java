@@ -22,7 +22,7 @@ public abstract class AbstractFlag<F extends AbstractFlag<F, V>, V> implements F
 
     @Override
     public String name() {
-        if (this.name != null && this.name.length() > 0) {
+        if (this.name != null && !this.name.isEmpty()) {
             return this.name;
         }
         return FlagValue.super.name();
@@ -63,6 +63,19 @@ public abstract class AbstractFlag<F extends AbstractFlag<F, V>, V> implements F
     @SuppressWarnings({"unchecked"})
     public String toString() {
         return Flags.toString((F) this);
+    }
+
+    protected F noneFlag() {
+        return null;
+    }
+
+    protected F createFlagRemoveNone(V value) {
+        final F flag = this.createFlag(value);
+        final F noneFlag = this.noneFlag();
+        if (noneFlag == null || flag.equals(noneFlag) || !flag.hasFlag(this.noneFlag())) {
+            return flag;
+        }
+        return flag.removeFlag(noneFlag);
     }
 
     /**

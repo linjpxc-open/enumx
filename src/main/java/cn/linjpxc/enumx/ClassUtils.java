@@ -3,9 +3,9 @@ package cn.linjpxc.enumx;
 /**
  * @author linjpxc
  */
-final class Classes {
+final class ClassUtils {
 
-    private Classes() {
+    private ClassUtils() {
     }
 
     private static final String TRUE = "true";
@@ -59,7 +59,7 @@ final class Classes {
         }
 
         final String str = value.toString();
-        if (Strings.isEmpty(str)) {
+        if (StringUtils.isEmpty(str)) {
             return null;
         }
         if (clazz == Boolean.class || clazz == boolean.class) {

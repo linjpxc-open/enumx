@@ -6,6 +6,50 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
+ * <pre>
+ *     {@code
+ *         public final class DemoTextFlag extends TextFlag<DemoTextFlag> {
+ *
+ *             @Flag(isDefined = false)
+ *             public static final DemoTextFlag NONE = new DemoTextFlag();
+ *
+ *             @Flag
+ *             public static final DemoTextFlag A = new DemoTextFlag();
+ *
+ *             @Flag
+ *             public static final DemoTextFlag B = new DemoTextFlag();
+ *
+ *             private DemoTextFlag() {
+ *                 super(DEFAULT_DELIMITER);
+ *             }
+ *
+ *             private DemoTextFlag(String value) {
+ *                 super(DEFAULT_DELIMITER, value);
+ *             }
+ *
+ *             private DemoTextFlag(String name, String value) {
+ *                 super(DEFAULT_DELIMITER, name, value);
+ *             }
+ *
+ *             @Override
+ *             protected DemoTextFlag createFlag(String value) {
+ *                 return new DemoTextFlag(value);
+ *             }
+ *
+ *             public static DemoTextFlag valueOf(String value) {
+ *                 return Flags.valueOf(DemoTextFlag.class, value);
+ *             }
+ *
+ *             public static DemoTextFlag[] values() {
+ *                 return Flags.getDefineValues(DemoTextFlag.class);
+ *             }
+ *
+ *             private static DemoTextFlag valueOf(String name, String value) {
+ *                 return new DemoTextFlag(name, value);
+ *             }
+ *         }
+ *     }
+ * </pre>
  * @author linjpxc
  */
 @SuppressWarnings("AlibabaAbstractClassShouldStartWithAbstractNaming")
@@ -18,7 +62,7 @@ public abstract class TextFlag<F extends TextFlag<F>> extends AbstractFlag<F, St
 
     protected TextFlag(String delimiter) {
         super("");
-        if (delimiter.length() < 1) {
+        if (delimiter.isEmpty()) {
             throw new IllegalArgumentException("Delimiter is empty.");
         }
         this.delimiter = delimiter;
@@ -27,7 +71,7 @@ public abstract class TextFlag<F extends TextFlag<F>> extends AbstractFlag<F, St
 
     protected TextFlag(String delimiter, String value) {
         super(handleValue(value, delimiter));
-        if (delimiter.length() < 1) {
+        if (delimiter.isEmpty()) {
             throw new IllegalArgumentException("Delimiter is empty.");
         }
         this.delimiter = delimiter;
@@ -36,7 +80,7 @@ public abstract class TextFlag<F extends TextFlag<F>> extends AbstractFlag<F, St
 
     protected TextFlag(String delimiter, String name, String value) {
         super(name, handleValue(value, delimiter));
-        if (delimiter.length() < 1) {
+        if (delimiter.isEmpty()) {
             throw new IllegalArgumentException("Delimiter is empty.");
         }
         this.delimiter = delimiter;
@@ -50,7 +94,7 @@ public abstract class TextFlag<F extends TextFlag<F>> extends AbstractFlag<F, St
 
     @Override
     public String value() {
-        if (this.value.length() < 1) {
+        if (this.value.isEmpty()) {
             Flags.getFlagWrappers(this.getDeclaringClass());
         }
         return super.value();
@@ -62,7 +106,7 @@ public abstract class TextFlag<F extends TextFlag<F>> extends AbstractFlag<F, St
             return false;
         }
         value = this.handleValue(value);
-        if (value.length() < 1) {
+        if (value.isEmpty()) {
             return this.hasEmpty();
         }
         final String thisValue = this.value();
@@ -76,7 +120,7 @@ public abstract class TextFlag<F extends TextFlag<F>> extends AbstractFlag<F, St
         valueLabel:
         for (String valueItem : valueArray) {
             valueItem = valueItem.trim();
-            if (valueItem.length() > 0) {
+            if (!valueItem.isEmpty()) {
                 for (String thisItem : thisArray) {
                     thisItem = thisItem.trim();
                     if (thisItem.equalsIgnoreCase(valueItem)) {
@@ -101,7 +145,7 @@ public abstract class TextFlag<F extends TextFlag<F>> extends AbstractFlag<F, St
         valueLabel:
         for (String valueItem : valueArray) {
             valueItem = valueItem.trim();
-            if (valueItem.length() > 0) {
+            if (!valueItem.isEmpty()) {
                 for (String thisItem : thisArray) {
                     if (thisItem.equalsIgnoreCase(valueItem)) {
                         continue valueLabel;
@@ -113,7 +157,7 @@ public abstract class TextFlag<F extends TextFlag<F>> extends AbstractFlag<F, St
                 builder.append(valueItem);
             }
         }
-        return createFlag(builder.toString());
+        return createFlagRemoveNone(builder.toString());
     }
 
     @Override
@@ -129,7 +173,7 @@ public abstract class TextFlag<F extends TextFlag<F>> extends AbstractFlag<F, St
         for (String thisItem : thisArray) {
             for (String valueItem : valueArray) {
                 valueItem = valueItem.trim();
-                if (valueItem.length() > 0) {
+                if (!valueItem.isEmpty()) {
                     if (thisItem.equalsIgnoreCase(valueItem)) {
                         continue thisLabel;
                     }
@@ -141,7 +185,7 @@ public abstract class TextFlag<F extends TextFlag<F>> extends AbstractFlag<F, St
             builder.append(thisItem);
         }
 
-        return createFlag(builder.toString());
+        return createFlagRemoveNone(builder.toString());
     }
 
     @Override
@@ -188,7 +232,7 @@ public abstract class TextFlag<F extends TextFlag<F>> extends AbstractFlag<F, St
         }
         value = value.trim();
 
-        final String[] array = value.split("\\" + delimiter);
+        final String[] array = value.split("\\\\" + delimiter);
         final Set<String> set = new TreeSet<>((o1, o2) -> {
             if (Objects.equals(o1, o2)) {
                 return 0;

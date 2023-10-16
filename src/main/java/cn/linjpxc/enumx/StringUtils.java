@@ -3,12 +3,12 @@ package cn.linjpxc.enumx;
 /**
  * @author linjpxc
  */
-final class Strings {
+final class StringUtils {
 
-    private Strings(){}
+    private StringUtils(){}
 
     static boolean isEmpty(String value){
-        return value == null || value.length() < 1;
+        return value == null || value.isEmpty();
     }
 
     static boolean isNotEmpty(String value){
@@ -16,7 +16,7 @@ final class Strings {
     }
 
     static boolean isBlank(String value){
-        return value == null || value.trim().length() < 1;
+        return value == null || value.trim().isEmpty();
     }
 
     static boolean isNotBlank(String value){

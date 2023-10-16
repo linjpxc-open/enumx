@@ -57,7 +57,7 @@ public final class Flags {
         if (primitiveConvert) {
             final Class<V> valueType = getValueType(clazz);
             if (valueType != value) {
-                return valueOf(clazz, (V) Classes.convertPrimitive(valueType, value));
+                return valueOf(clazz, (V) ClassUtils.convertPrimitive(valueType, value));
             }
         }
         return valueOf(clazz, (V) value);
@@ -83,6 +83,9 @@ public final class Flags {
     }
 
     static <F extends FlagValue<F, V>, V> String toString(F flag, String delimiter) {
+        if (flag.isDefined()) {
+            return flag.name();
+        }
         final F[] values = getValues(flag.getDeclaringClass());
         for (F value : values) {
             if (value.equals(flag)) {
@@ -148,7 +151,7 @@ public final class Flags {
                         final Field valueField = AbstractFlag.class.getDeclaredField("value");
                         valueField.setAccessible(true);
                         final String tmp = (String) valueField.get(value);
-                        if (tmp.length() < 1) {
+                        if (tmp.isEmpty()) {
                             removeFinal(valueField);
 
                             valueField.set(value, field.getName().toUpperCase(Locale.ROOT));
@@ -173,7 +176,7 @@ public final class Flags {
     }
 
     private static Method getValueOfMethod(Class<?> clazz, Class<?> valueType) throws NoSuchMethodException {
-        final Class<?> primitiveType = Classes.convertPrimitiveType(valueType);
+        final Class<?> primitiveType = ClassUtils.convertPrimitiveType(valueType);
         if (primitiveType != valueType) {
             try {
                 return clazz.getDeclaredMethod(VALUE_OF_METHOD_NAME, String.class, primitiveType);
