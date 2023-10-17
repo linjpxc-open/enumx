@@ -50,6 +50,7 @@ import java.util.TreeSet;
  *         }
  *     }
  * </pre>
+ *
  * @author linjpxc
  */
 @SuppressWarnings("AlibabaAbstractClassShouldStartWithAbstractNaming")
@@ -232,7 +233,7 @@ public abstract class TextFlag<F extends TextFlag<F>> extends AbstractFlag<F, St
         }
         value = value.trim();
 
-        final String[] array = value.split("\\\\" + delimiter);
+        final String[] array = value.split(String.format("\\%s", delimiter));
         final Set<String> set = new TreeSet<>((o1, o2) -> {
             if (Objects.equals(o1, o2)) {
                 return 0;

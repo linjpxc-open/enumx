@@ -6,7 +6,7 @@
 
     <groupId>cn.linjpxc</groupId>
     <artifactId>enumx</artifactId>
-    <version>0.3.6</version>
+    <version>0.3.7</version>
 
     <licenses>
         <license>
@@ -130,9 +130,6 @@
                         </goals>
                     </execution>
                 </executions>
-<!--                <configuration>-->
-<!--                    <skip>true</skip>-->
-<!--                </configuration>-->
             </plugin>
         </plugins>
     </build>
